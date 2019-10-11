@@ -38,10 +38,6 @@ tags: Unity C# ScriptableObject AddressableAssets gas
 
 # 導入
 
-### アセットの入手 (GitHub)
-- ダウンロード ⇒ [GetSharedData.unitypackage](https://github.com/tetr4lab/GetSharedData2/raw/master/GetSharedData.unitypackage)
-    - [ソースはこちらです。](https://github.com/tetr4lab/GetSharedData2)
-
 ### Google Apps Script の作成
 
 - [The Apps Script Dashboard](https://script.google.com/home)へアクセスします。
