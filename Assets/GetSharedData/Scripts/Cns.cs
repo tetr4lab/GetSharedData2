@@ -64,6 +64,7 @@ namespace SharedConstant {
 				select = value;
 				if (TextLoader.IsValid ()) {
 					TextLoader.Completed -= OnLoad;
+					Addressables.Release (TextLoader);
 				}
 				TextLoader = Addressables.LoadAssetAsync<ScriptableStringList> ($"{TextAssetPath}{TextAssetPrefix}{select}.asset");
 				if (TextLoader.IsValid ()) {
