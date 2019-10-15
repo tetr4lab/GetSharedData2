@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -25,10 +26,9 @@ public sealed class GetSharedData : EditorWindow {
 	/// <summary>ウィンドウオブジェクト</summary>
 	private static GetSharedData SingletonObject;
 
-	/// <summary>進捗</summary>
-	public static string Progress;
-	private static string LastProgress;
+	/// <summary>中断トークン</summary>
 	private static CancellationTokenSource TokenSource;
+
 	/// <summary>変換タスク</summary>
 	private static Task Translator = null;
 
@@ -41,8 +41,6 @@ public sealed class GetSharedData : EditorWindow {
 	/// <summary>取得と変換</summary>
 	[MenuItem ("Window/GetSharedData/Get SpreadSheet %&g")]
 	private static void onGetData () {
-		Progress = "";
-		LastProgress = "";
 		if (Translator != null) {
 			Debug.LogWarning ("GetSharedData: already running");
 			return;
@@ -52,10 +50,7 @@ public sealed class GetSharedData : EditorWindow {
 			AssetPath = $"{AssetPath}/";
 		}
 		checkFolder (AssetPath);
-		ErrorMessage = null;
-		TokenSource = new CancellationTokenSource ();
-		var token = TokenSource.Token;
-		Translator = Task.Run (async () => { parser = await GetSharedDataTranslator.Translator.Translate (token, Application, Keyword, Document, AssetPath); }, token);
+		translateAsync ();
 
 		bool checkFolder (string path) { // ターゲットフォルダがなければ作成
 			if (path.EndsWith ("/")) { path = path.TrimEnd ('/'); }
@@ -97,34 +92,28 @@ public sealed class GetSharedData : EditorWindow {
 		Debug.Log ($"GetSharedData: Project {PlayerSettings.companyName}/{PlayerSettings.productName}");
 	}
 
-	/// <summary>終了時の処理</summary>
-	private static void onCompleted () {
-		if (string.IsNullOrEmpty (ErrorMessage) && (Translator == null || Translator.Status == TaskStatus.RanToCompletion) && parser !=null && parser.Generate (AssetPath)) {
-			Debug.Log ("GetSharedData:└─── END");
-		} else {
-			Debug.LogError (string.IsNullOrEmpty (ErrorMessage) ? $"GetSharedData: Task {Translator.Status}" : ErrorMessage);
-			Debug.Log ("GetSharedData:└─── ABORT");
-		}
-		TokenSource.Dispose ();
-		Translator.Dispose ();
-		Translator = null;
-		AssetDatabase.Refresh (); // アセットを更新
-		if (SingletonObject) { SingletonObject.Repaint (); }
-	}
-
-	/// <summary>終了の監視</summary>
-	[InitializeOnLoadMethod]
-	private static void Init () {
-		EditorApplication.update += () => {
-			if (Translator != null) {
-				if (Translator.IsCompleted) {
-					onCompleted ();
-				} else if (LastProgress != Progress) {
-					Debug.Log ($"GetSharedData: {Progress}");
-					LastProgress = Progress;
-				}
+	/// <summary>非同期呼び出しと終了時の処理</summary>
+	private static async void translateAsync () {
+		try {
+			ErrorMessage = null;
+			TokenSource = new CancellationTokenSource ();
+			var token = TokenSource.Token; // 中断トークン
+			var progress = new Progress<object> (str => Debug.Log ($"GetSharedData: {str}")); // 進捗報告ハンドラ
+			Translator = Task.Run (async () => { parser = await GetSharedDataTranslator.Translator.Translate (token, progress, Application, Keyword, Document, AssetPath); }, token);
+			await Translator;
+		} finally {
+			if (string.IsNullOrEmpty (ErrorMessage) && (Translator == null || Translator.Status == TaskStatus.RanToCompletion) && parser != null && parser.Generate (AssetPath)) {
+				Debug.Log ("GetSharedData:└─── END");
+			} else {
+				Debug.LogError (string.IsNullOrEmpty (ErrorMessage) ? $"GetSharedData: Task {Translator.Status}" : ErrorMessage);
+				Debug.Log ("GetSharedData:└─── ABORT");
 			}
-		};
+			TokenSource.Dispose ();
+			Translator.Dispose ();
+			Translator = null;
+			AssetDatabase.Refresh (); // アセットを更新
+			if (SingletonObject) { SingletonObject.Repaint (); }
+		}
 	}
 
 	#endregion

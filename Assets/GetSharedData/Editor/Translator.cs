@@ -26,28 +26,18 @@ namespace GetSharedDataTranslator {
 		}
 
 		/// <summary>トランスレーター</summary>
-		public static async Task<Parser> Translate (CancellationToken token, string application, string keyword, string document, string dstPath) {
-			try {
-				if (httpClient == null) { httpClient = new HttpClient (); }
-			} catch (Exception exception) {
-				Log.FatalError (exception, "httpClient");
-			}
-			using (var dummy = new Log (document, token)) {
+		public static async Task<Parser> Translate (CancellationToken token, Progress<object> progress, string application, string keyword, string document, string dstPath) {
+			if (httpClient == null) { httpClient = new HttpClient (); }
+			using (var dummy = new Log (document, token, progress)) {
 				httpClient.Timeout = TimeSpan.FromMilliseconds (WebTimeout);
 				Log.Progress ($"started at {DateTime.Now}");
 				var book = await getSpreadsheets (application, keyword, document, "Text", "Const");
 				Log.Progress ("spreadsheet data recieved");
-				try {
-					var parser = new Parser (book);
-					parser.Parse ();
-					Log.Progress ($"finished at {DateTime.Now}");
-					return parser;
-				} catch (Exception exception) {
-					Log.FatalError (exception, "Translate");
-				}
-				Log.Progress ($"completed at {DateTime.Now}");
+				var parser = new Parser (book);
+				parser.Parse ();
+				Log.Progress ($"finished at {DateTime.Now}");
+				return parser;
 			}
-			return null;
 		}
 
 		/// <summary>スプレッドシートを取得してjsonファイルを保存</summary>
@@ -55,23 +45,18 @@ namespace GetSharedDataTranslator {
 			Exception lastException = null;
 			Catalog<string> sheetNames = null;
 			Catalog<int> sheetIDs = null;
-			try {
-				var sheets = new Book { };
-				await getCatalog ();
-				for (var i = 0; i < names.Length; i++) {
-					var index = sheetNames.IndexOf (names [i]);
-					if (index < 0) {
-						Log.Debug ($"not found sheet '{names [i]}'");
-					} else {
-						sheets.Add (names [i], await getSheet (index));
-					}
+			var sheets = new Book { };
+			await getCatalog ();
+			for (var i = 0; i < names.Length; i++) {
+				var index = sheetNames.IndexOf (names [i]);
+				if (index < 0) {
+					Log.Debug ($"not found sheet '{names [i]}'");
+				} else {
+					sheets.Add (names [i], await getSheet (index));
 				}
-				await Task.Delay (WebInterval);
-				return sheets;
-			} catch (Exception exception) {
-				Log.FatalError (exception, "LOAD ERROR (NETWORK)");
 			}
-			return null;
+			await Task.Delay (WebInterval);
+			return sheets;
 
 			// カタログの取得
 			async Task getCatalog () {

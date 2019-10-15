@@ -24,6 +24,9 @@ namespace GetSharedDataTranslator {
 		/// <summary>ドキュメントID</summary>
 		private static string Document;
 
+		/// <summary>進捗報告ハンドラ</summary>
+		private static IProgress<object> iPprogress;
+
 		/// <summary>中断進行中</summary>
 		private static bool isAbortProgress;
 
@@ -59,23 +62,20 @@ namespace GetSharedDataTranslator {
 		}
 
 		/// <summary>コンストラクタ</summary>
-		public Log (string document, CancellationToken token) {
-			try {
-				Token = token;
-				if (LogFile != default) { LogFile.Close (); }
-				if (Directory.Exists (LogPath)) {
-					DeleteFiles (LogPath);
-				} else {
-					Directory.CreateDirectory (LogPath);
-				}
-				var logFile = File.CreateText ($"{LogPath}Debug.log");
-				logFile.AutoFlush = true;
-				LogFile = logFile;
-				LogFile.NewLine = "\n";
-				Document = document;
-			} catch (Exception exception) {
-				logAbort ($"Log.Create: {exception}");
+		public Log (string document, CancellationToken token, IProgress<object> progress) {
+			Token = token;
+			iPprogress = progress;
+			if (LogFile != default) { LogFile.Close (); }
+			if (Directory.Exists (LogPath)) {
+				DeleteFiles (LogPath);
+			} else {
+				Directory.CreateDirectory (LogPath);
 			}
+			var logFile = File.CreateText ($"{LogPath}Debug.log");
+			logFile.AutoFlush = true;
+			LogFile = logFile;
+			LogFile.NewLine = "\n";
+			Document = document;
 		}
 		public void Dispose () => LogFile.Close ();
 
@@ -91,7 +91,7 @@ namespace GetSharedDataTranslator {
 
 		/// <summary>進捗報告</summary>
 		public static void Progress (object message) {
-			GetSharedData.Progress = message.ToString ();
+			iPprogress.Report (message);
 			Logging (message);
 		}
 
