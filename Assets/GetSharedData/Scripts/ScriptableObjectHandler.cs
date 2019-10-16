@@ -9,11 +9,16 @@ using UnityEditor;
 namespace ScriptableClass {
 
 	/// <summary>スクリプタブルオブジェクト・ハンドラ</summary>
-	public sealed class ScriptableObjectHandler<T> : IDisposable where T : ScriptableObject {
+	public sealed class ScriptableObjectHandler<T>
+#if UNITY_EDITOR
+		: IDisposable where T
+#endif
+		: ScriptableObject {
 
 		/// <summary>対象オブジェクト</summary>
 		public T Object { get; private set; }
 
+#if UNITY_EDITOR
 		/// <summary>開くまたは新規作成</summary>
 		public ScriptableObjectHandler (string path) {
 			Object = AssetDatabase.LoadAssetAtPath<T> (path);
@@ -32,6 +37,8 @@ namespace ScriptableClass {
 				Object = null;
 			}
 		}
+#endif
+
 	}
 
 }
