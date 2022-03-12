@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using SystemLanguage = UnityEngine.SystemLanguage;
-using SharedConstant;
 
 namespace GetSharedDataTranslator {
 
@@ -42,7 +41,7 @@ namespace GetSharedDataTranslator {
 				}
 			}
 			for (var c = 2; c < rows [0].Count; c++) {
-				if (Enum.TryParse< SystemLanguage> (rows [0] [c], out var language)) {
+				if (Enum.TryParse<SystemLanguage> (rows [0] [c], out var language)) {
 					Languages.Add (language);
 					var list = new List<string> { };
 					for (var r = 1; r < rows.Count; r++) {

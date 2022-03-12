@@ -3,7 +3,12 @@
 [Oo]bj/
 [Bb]uild/
 [Bb]uilds/
-Assets/AssetStoreTools*
+[Aa]ssets/[Aa]ssetStoreTools*
+[Ll]ogs/
+[Ee]xportedObj/
+
+# Visual Studio config
+.vsconfig
 
 # Visual Studio cache directory
 .vs/
@@ -31,6 +36,20 @@ ExportedObj/
 # Unity3D Generated File On Crash Reports
 sysinfo.txt
 
+# GetSharedData Log files
+[Ll]og~/
+
 # Builds
 *.apk
 *.unitypackage
+*.win
+*.mac
+*.ios
+
+# OS generated
+.DS_Store
+.DS_Store?
+._*
+.Trashes
+ehthumbs.db
+Thumbs.db

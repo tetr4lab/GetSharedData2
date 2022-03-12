@@ -14,10 +14,10 @@ namespace GetSharedDataTranslator {
 				if (sheet.HasKey (keys)) {
 					return sheet;
 				} else {
-					Log.Error ($"key not found ('{string.Join ("', '", keys)}')");
+					Log.Error ($"key not found ('{string.Join ("', '", keys)}')", new KeyNotFoundException ());
 				}
 			} else {
-				Log.Error ($"sheet not found '{name}'");
+				Log.Error ($"sheet not found '{name}'", new KeyNotFoundException ());
 			}
 			return null;
 		}
@@ -60,7 +60,7 @@ namespace GetSharedDataTranslator {
 			foreach (var key in keys) {
 				var col = IndexOf (key);
 				if (col < 0) {
-					Log.Error ($"key not found '{key}'");
+					Log.Error ($"key not found '{key}'", new KeyNotFoundException ());
 				} else {
 					keycols.Add (col);
 				}
@@ -101,7 +101,7 @@ namespace GetSharedDataTranslator {
 			if (Id < int.MaxValue) {
 				var index = FindIndex ("Key"); // あるはずのキーを探す
 				if (index == InvalidIndex) {
-					Log.Error ("not found the column 'Key'");
+					Log.Error ("not found the column 'Key'", new KeyNotFoundException ());
 				} else {
 					KeyRow = index.row;
 					KeyList = values [KeyRow];

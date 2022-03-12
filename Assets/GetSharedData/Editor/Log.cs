@@ -37,11 +37,8 @@ namespace GetSharedDataTranslator {
 		private static void logAbort (string message, Exception exception = null, bool force = false) {
 			if (!force && isAbortProgress) { return; }
 			Task.Delay (100);
-			LogFile.Dispose ();
-			LogFile = null;
 			Document = null;
 			GetSharedData.ErrorMessage = message;
-			if (message.Contains ("NETWORK")) { Translator.Dispose (); } // 回線を閉じる
 			Task.Delay (100);
 			throw exception ?? new Exception ();
 		}
@@ -51,7 +48,7 @@ namespace GetSharedDataTranslator {
 			if (line == null) { line = "ERROR: Log.WriteLine: null"; }
 			LogFile.WriteLine (line);
 			if (Token.IsCancellationRequested) {
-				logAbort ("GetSharedData: canceled by user");
+				logAbort ("GetSharedData: canceled by user", new OperationCanceledException ());
 			}
 		}
 
@@ -101,17 +98,17 @@ namespace GetSharedDataTranslator {
 		}
 
 		/// <summary>警告記録</summary>
-		public static void Worning (object message) {
+		public static void Worning (object message, Exception exception = null) {
 			Logging (message, "WORNING");
 			Task.Delay (200);
-			FatalError (null, message);
+			FatalError (exception, message);
 		}
 
 		/// <summary>エラー記録</summary>
-		public static void Error (object message) {
+		public static void Error (object message, Exception exception = null) {
 			Logging (message, "ERROR");
 			Task.Delay (200);
-			FatalError (null, message);
+			FatalError (exception, message);
 		}
 
 		/// <summary>致命的エラー</summary>

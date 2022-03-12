@@ -1,52 +1,74 @@
 # GetSharedData2
-Unity collaboration development using Google Spreadsheet (ScriptableObject, Addressables compatible version)
+Unity collaboration development using Google Spreadsheet (OAuth 2.0 compatible version)
 
 ---
-title: Googleスプレッドシートを使ったUnityコラボ開発 (ScriptableObject、Addressables 対応版)
-tags: Unity C# ScriptableObject AddressableAssets gas
+
+title: Googleスプレッドシートを使ったUnityコラボ開発 (OAuth 2.0対応版)
+
+tags: Unity C# ScriptableObject gas OAuth
+
 ---
+
 # はじめに
-- この記事は、[過去に公開した記事](https://qiita.com/tetr4lab/items/4d04e46ac503f19fe1e7)の焼き直しで、`ScriptableObject`と`Addressables`に対応した版です。
-- また、スプレッドシート側の計算式を使わずに、シート全体を取得して解析するように変更しています。
+- この記事は、[過去に公開した記事](https://qiita.com/tetr4lab/items/4d04e46ac503f19fe1e7)の焼き直しで、以下の相違があります。
+  - `ScriptableObject`と`Addressables`に対応しました。
+  - スプレッドシート側の計算式を使わずに、シート全体を取得して解析するようしました。
+- 公開当初に比して、以下の点が変更されました。
+  - unity 2020.3で確認しました。
+  - OAuth 2.0に対応しました。
+  - Windowsに依存した可能性が高いです。
 
-# 前提
-- unity 2018.4.8f1
-    - Addressables 1.2.4
+## 前提
+- unity 2020.3.30f1
+    - Addressables 1.18.19
 - Googleスプレッドシート
 - Googleアカウント
+- Windows 10
+  - 他のOSではテストされておらず、動作は不明です。
 <details><summary>このシステムのセキュリティについて</summary><div>
+
 - このシステムのセキュリティ
     - スプレッドシート
         - 特別な共有設定は不要で、共同編集者のGoogleアカウントに対する共有のみを設定します。
         - ドキュメントIDが、平文でエディターの設定内([EditorPrefs](https://docs.unity3d.com/ja/current/ScriptReference/EditorPrefs.html))に保存されます。
-    - GAS (Google Apps Script)
-        - URLを知っていれば誰でも使用できるように設定します。
-        - 承認したGoogleアカウントの権限で実行され、承認者のGoogleドライブに保存された全てのスプレッドシートにアクセス可能です。
-        - URLが、平文でエディターの設定内([EditorPrefs](https://docs.unity3d.com/ja/current/ScriptReference/EditorPrefs.html))に保存されます。
+    - Google Apps Script
+        - 自分のみが使えるように設定します。
+        - 承認したGoogleアカウントの権限で実行され、承認者がアクセス可能な全てのスプレッドシートにアクセス可能です。
+        - アプリケーションのURLが、平文でエディターの設定内([EditorPrefs](https://docs.unity3d.com/ja/current/ScriptReference/EditorPrefs.html))に保存されます。
+    - Google Cloud Platform
+        - クライアント ID、クライアント シークレット、アクセストークン、リフレッシュトークンが、平文でエディターの設定内([EditorPrefs](https://docs.unity3d.com/ja/current/ScriptReference/EditorPrefs.html))に保存されます。
+
 </div></details>
 
-# できること
+## できること
 - 言語別テキストや定数などをGoogleスプレッドシートで共同編集できます。
+  - 「シナリオやユーザー向けメッセージなどの編集者」や「各種の初期値を設定する担当者」がプログラマーでない場合に共同制作が容易になります。
+  - 多言語対応のテキストと、言語に依存しない固定値 (int、float、string、bool)を扱えます。
 - 編集結果は、任意のタイミングでプロジェクトへ取り込むことができます。
-- 「シナリオやユーザー向けメッセージなどの編集者」や「各種の初期値を設定する担当者」がプログラマーでない場合に共同制作が容易になります。
-- 多言語対応のテキストと、言語に依存しない固定値 (int、float、string、bool)を扱えます。
+- ビルド番号を管理できます。
+  - スクリプトから定数として参照できます。
+  - ビルド毎に自動更新できます。
+  - プラットフォーム毎の番号を統一できます。
 
-# 特徴
+## 特徴
 - 取り込んだスプレッドシートの情報を、C#スクリプトと言語別ScriptableObjectに変換します。
 - ScriptableObjectはAddressablesで管理されます。
 - スプレッドシートの取り込みは、別スレッドで実行され、エディターをブロックしません。
 
 # 導入
+## クラウドの準備
 
 ### Google Apps Script の作成
 
 - [The Apps Script Dashboard](https://script.google.com/home)へアクセスします。
-- 「新規スクリプト」を作成し、`getspreadseet`と名付けます。
+- 「新規スクリプト」を作成します。仮に、`getspreadseet2`と名付けたものとします。
 - 「コード.gs」の中身を、以下のコードで置き換えます。
 
-```js:getspreadseet/コード.gs
+```js:getspreadseet2/コード.gs
+// getspreadseet?d=document&s=seet&a=area
+
 function doGet(e) {
-  if (e.parameter.k == '《Access Key》') {
+  if (e.parameter.d != null) {
     var spreadsheet = SpreadsheetApp.openById(e.parameter.d);
     if (e.parameter.w == null) { // 読み出し
       if (e.parameter.a != null) { // セル
@@ -74,7 +96,6 @@ function doGet(e) {
         Logger.log(sheetnames);
         return ContentService.createTextOutput(JSON.stringify(sheetnames)).setMimeType(ContentService.MimeType.TEXT);
       }
-      return ContentService.createTextOutput("[]").setMimeType(ContentService.MimeType.TEXT); // 空json
     } else { // 書き込み
       if (e.parameter.a != null) { // セル
         spreadsheet.getSheetByName(e.parameter.s).getRange(e.parameter.a).setValue(e.parameter.w);
@@ -85,6 +106,7 @@ function doGet(e) {
         } else {
           sheet = spreadsheet.insertSheet(e.parameter.s);
         }
+        //return ContentService.createTextOutput(e.parameter.w).setMimeType(ContentService.MimeType.TEXT);
         var values = JSON.parse(e.parameter.w);
         sheet.getRange(1,1,values.length,values[0].length).setValues(values);
         sheet.autoResizeColumns (1, values[0].length);
@@ -95,67 +117,66 @@ function doGet(e) {
           sheet.setFrozenColumns(e.parameter.c);
         }
       }
-      return ContentService.createTextOutput("").setMimeType(ContentService.MimeType.TEXT); // 空
     }
   }
+  return ContentService.createTextOutput("[]").setMimeType(ContentService.MimeType.TEXT); // 空
 }
 
 function doPost (e) {
   return doGet (e);
 }
 ```
-- **スクリプト冒頭の「《Access Key》」を、キーワードで書き換えてください。**
-    - これは秘密のURLの一部になるので、ランダムで十分長い文字列にしてください。
-    - このキーワードは、後で使用しますので、何処か安全な場所に控えておいてください。
-- スクリプトを保存します。
-- 「公開」メニューから、「ウェブ アプリケーションとして導入」を選び、以下を選択します。
-    - プロジェクト バージョン: `New`
+- 「デプロイ」から「新しいデプロイ」を選び、以下を選択します。
     - 次のユーザーとしてアプリケーションを実行: `自分（～）`
-    - アプリケーションにアクセスできるユーザー: `全員（匿名ユーザーを含む）`
-- 「導入」ボタンを押します。
-<details><summary>続いて、スクリプトを「承認」する必要があります。</summary><div>
-- 承認の進め方
-    - 「承認が必要です」と言われたら「許可を確認」するボタンを押します。
-    - 「このアプリは確認されていません」と表示されたら「詳細」をクリックします。
-    - 「getspreadsheet（安全ではないページ）に移動」と表示されるので、クリックします。
-    - 「getspreadsheet が Google アカウントへのアクセスをリクエストしています」と表示されるので、「許可」します。
-    - 「現在のウェブ アプリケーションの URL」が表示されます。
-        - このURLは、後で使用しますので、何処か安全な場所に控えておいてください。
-    - これによって、URLを知る誰でも、承認したアカウントの権限で、スクリプトが実行可能になります。
-        - スクリプトは、アカウントにアクセス権がありドキュメントIDが分かる任意のスプレッドシートを読み取ることができます。
-        - スクリプトと権限は、いつでも[The Apps Script Dashboard](https://script.google.com/home)から削除可能です。
-</div></details>
+    - アクセスできるユーザー: `自分のみ`
+- 「デプロイ」ボタンを押します。
+  - デプロイする際には、先ず承認が必要です。
+- デプロイできたら、《ウェブ アプリケーションの URL》を控えておきます。
+  - 後からでも、「デプロイの管理」から確認できます。
 
-# プロジェクトの準備
+### Google Cloud Platform の作成
+- Google Cloud Platformの[ダッシュボード](https://console.cloud.google.com/apis/dashboard)へアクセスします。
+- 「APIとサービス」→「OAuth 同意画面」で、同意画面を作ります。
+    - 初めてなら、まず、プロジェクトを作ることになります。
+    - 「テストユーザー」に自分を追加します。
+- 「認証情報」に切り替えて、「OAuth クライアント ID」を作成します。
+    - 「アプリケーションの種類」は「デスクトップアプリ」にします。
+    - 《クライアント ID》と《クライアント シークレット》を控えます。
+      - 後からでも、「認証情報」から確認できます。
 
 ### スプレッドシートの用意
 - [スプレッドシートの雛形](https://drive.google.com/open?id=1NSBz8MvVLGg5l3zdsnGJsB4aOBx9x3kRR48xbmgsjJ4)を開き、ファイルメニューから「コピーを作成…」を選びます。
 - フォルダを選んで保存します。
-    - Googleドライブに保存されます。(ドライブの容量は消費しません。)
+    - Googleドライブに保存されます。
 - マイドライブから保存したフォルダへ辿り、コピーされたスプレッドシートを開きます。
-- 開いたスプレッドシートのURLで、`https://docs.google.com/spreadsheets/d/～～～/edit#gid=～`の「/d/～～～/edit#」の部分に注目してください。
-    - この「～～～」の部分が、このスプレッドシートの`Document ID`です。
+- 開いたスプレッドシートのURLで、`https://docs.google.com/spreadsheets/d/～～～/edit`の「/d/～～～/」の部分に注目してください。
+    - この「～～～」の部分が、このスプレッドシートの《ドキュメントID》です。
     - このIDは、後で使用しますので、何処か安全な場所に控えておいてください。
 
-### Addressablesの導入
-- パッケージマネージャーを使ってAddressablesを導入します。
-- Window (Menu) > Package Manager > Pakkages (Window) > Addressables > Install (Button)
+## Unityプロジェクトの準備
 
-### アセットの導入と設定
+### アセットの導入
 
-- プロジェクトにアセット「GetSharedData.unitypackage」を導入してください。
+- このリポジトリをベースにするものと想定します。
+
+### 設定
 - 「Window」メニューの「GetSharedData > OPen Setting Window」を選択しウインドウを開きます。
-- 「Application URL*」に、控えておいた「ウェブ アプリケーションの URL」を記入します。
-- 「Access Key*」に、控えておいたキーワードを記入します。
-- 「Document ID」に、控えておいたスプレッドシートのIDを記入します。
+- 「Document ID」に、控えておいた《ドキュメントID》を記入します。
 - 「Asset Folder」は、プロジェクトのフォルダ構造に合わせて書き換え可能です。
+- 「Application URL」に、控えておいた《ウェブ アプリケーションの URL》を記入します。
+  - 後からURLを確認するには、[The Apps Script Dashboard](https://script.google.com/home)の「デプロイの管理」を参照します。
+- 「OAuth Settings」を開き「Client ID」と「Client Secret」に、控えておいた《クライアント ID》と《クライアント シークレット》を記入します。
+  - 後からIDとシークレットを確認するには、[GCPダッシュボード](https://console.cloud.google.com/apis/dashboard)の「認証情報」を参照します。
+- 「Build Number」は、ビルド番号を取り込む機構に対する設定です。
+  - 「Unified Number」にチェックすると、機種毎のビルド番号を最大のものに合わせます。
+  - 「Auto Increment」にチェックすると、ビルド毎に自動的にビルド番号を1増やします。
 - 設定はエディターを終了しても保存されます。
-    - 「*」の付く設定は、プロジェクトを跨いで共有されます。
-    - その他の設定はプロジェクト毎に保持されます。
-        - プロジェクトは、`Player Settings`の`Company Name`と`Product Name`で識別されますので、適切に設定してください。
+    - プロジェクトの設定は、`Player Settings`の`Company Name`と`Product Name`で識別されるプロジェクト毎に保持されます。
+    - 「Application URL」は、プロジェクトを横断して保持されます。
     - 全ての設定は、[EditorPrefs](https://docs.unity3d.com/ja/current/ScriptReference/EditorPrefs.html)に平文で保存されます。
 
 # 使い方
+## 編集と取り込み
 
 ### スプレッドシート
 - 「Text」と「Const」は、シート名として予約されています。
@@ -164,7 +185,7 @@ function doPost (e) {
     - 他のシートは無視されます。
 - シートでは、行を3つの部分(「列ラベル」、「列ラベルより上」、「列ラベルより下」)に分けます。
     - 「Key」と書かれたセルが最初に見つかった行が、列ラベルになります。
-    - 列ラベルより上は無視されます。
+    - 列ラベルより上の行は無視されます。
 - 「Key」、「Type」、「Value」、「Comment」、および、[`UnityEngine.SystemLanguage`](https://docs.unity3d.com/ja/current/ScriptReference/SystemLanguage.html)で定義されている名前は、列ラベル名として予約されています。
     - ラベルの文字種や空白文字の有無は**区別されます**。
     - 予約されていない名前の列は無視されます。
@@ -184,10 +205,10 @@ function doPost (e) {
 - 再取り込みを行う際は、ファイルは作り直されずに内容だけが上書きされます。
     - Unityエディターで内容を編集することは想定していません。
 
-### スクリプトでの使用
+## スクリプトでの使用
 - `using SharedConstant;`を指定してください。
 
-#### テキスト
+### テキスト
 - システムの言語設定(`Application.systemLanguage`)に従って初期設定されます。
 - `SystemLanguage Txt.Locale` 言語 (プロパティ)
     - `SystemLanguage`型の値を代入することで、強制的に言語を切り替えます。
@@ -204,13 +225,13 @@ function doPost (e) {
     - 未定義なら`-1`を返します。
 - キー`Nam.～`は、`const int`として定義された文字列のインデックスです。
 
-#### 数値
+### 数値
 - キーは`const`として定義されます。
 - `Cns.～`として使用します。
 - `Cns.BuildNumber`、`Cns.BundleVersion`が自動的に定義されます。
 
 ## Unity使用者が複数いる場合の留意点
 - 例えば、「Unityを使わない企画者、Unityを使うデザイナとプログラマの3人」といったように、スプレッドシートからUnityに情報を取り込むメンバーが複数いる場合は以下の点に留意してください。
-- メンバーで共有する[アセットの設定](#%E3%82%A2%E3%82%BB%E3%83%83%E3%83%88%E3%81%AE%E5%B0%8E%E5%85%A5%E3%81%A8%E8%A8%AD%E5%AE%9A)は、「Document ID」と「Assets/Scripts/ Folder」だけです。
-- 「Application URL*」と「Access Key*」は共有してはいけません。つまり、各メンバーそれぞれが[Google Apps Script の作成](#google-apps-script-%E3%81%AE%E4%BD%9C%E6%88%90)を行う必要があります。
+- メンバーで共有する[アセットの設定](#%E3%82%A2%E3%82%BB%E3%83%83%E3%83%88%E3%81%AE%E5%B0%8E%E5%85%A5%E3%81%A8%E8%A8%AD%E5%AE%9A)は、「Project Settings」と「Build/Bundle Number Settings」だけです。
+- 「OAuth Settings」は共有してはいけません。つまり、各メンバーそれぞれが[Google Apps Script の作成](#google-apps-script-%E3%81%AE%E4%BD%9C%E6%88%90)を行う必要があります。
 - なお、これらの設定は、プロジェクトのフォルダには保存されないので、GitHubなどによるアセットの共有で問題が生じることはありません。

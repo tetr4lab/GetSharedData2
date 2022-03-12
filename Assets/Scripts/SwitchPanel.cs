@@ -35,7 +35,7 @@ public class SwitchPanel : MonoBehaviour {
 		if (TextPanel != default && lastLocale != Txt.Locale && Txt.Locale != SystemLanguage.Unknown) {
 			Debug.Log ($"Change {lastLocale} => {Txt.Locale} {Txt.S (Nam.Language)}");
 			Init ();
-			TextPanel.text = $"{Txt.S (Nam.Welcome)}\nTest = {Cns.Test}\n\nLanguage: {Txt.S (Nam.Language)}";
+			TextPanel.text = $"{Txt.S (Nam.Welcome)}\nTest = {Cns.Test}\n\nLanguage: {Txt.S (Nam.Language)}\n\nVersion: {Cns.BundleVersion} ({Cns.BuildNumber})";
 			lastLocale = Txt.Locale;
 		}
 	}

@@ -53,18 +53,6 @@ $@"namespace {nameof (SharedConstant)} {{
 	public static partial class {nameof (Cns)} {{
 		// 定数
 		{string.Join ($"{Environment.NewLine}\t\t", parser.Constants)}
-		/// <summary>ビルド番号</summary>
-#if UNITY_STANDALONE
-		public const string BuildNumber = ""{PlayerSettings.macOS.buildNumber}"";
-#elif UNITY_IPHONE
-		public const string BuildNumber = ""{PlayerSettings.iOS.buildNumber}"";
-#elif UNITY_ANDROID
-		public const string BuildNumber = ""{PlayerSettings.Android.bundleVersionCode}"";
-#else
-		public const string BuildNumber = ""{PlayerSettings.WSA.packageVersion}"";
-#endif
-		/// <summary>バンドルバージョン</summary>
-		public const string BundleVersion = ""{PlayerSettings.bundleVersion}"";
 	}}
 
 }}
