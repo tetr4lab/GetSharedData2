@@ -85,7 +85,9 @@ $@"namespace {nameof (SharedConstant)} {{
 				}
 			}
 			SettingsService.NotifySettingsProviderChanged ();
+#if UNITY_2020_1_OR_NEWER
 			SettingsService.RepaintAllSettingsWindow ();
+#endif
 		}
 	}
 
