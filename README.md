@@ -19,7 +19,7 @@ tags: Unity C# ScriptableObject gas OAuth
   - Windowsに依存した可能性が高いです。
 
 ## 前提
-- unity 2020.3.30f1
+- unity 2020.3.30f1 (2018.4.36でも動作確認済み)
     - Addressables 1.18.19
 - Googleスプレッドシート
 - Googleアカウント
