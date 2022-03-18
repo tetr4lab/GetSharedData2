@@ -46,17 +46,21 @@ namespace {nameof (SharedConstant)} {{
 
 }}
 ");
+
 			// 定数
-			File.WriteAllText (Path.Combine (path, "Number.cs"),
-$@"namespace {nameof (SharedConstant)} {{
-
+			File.WriteAllText (Path.Combine (path, "Number.cs"),string.Join ($"{Environment.NewLine}",
+$@"// 定数
+namespace {nameof (SharedConstant)} {{
 	public static partial class {nameof (Cns)} {{
-		// 定数
-		{string.Join ($"{Environment.NewLine}\t\t", parser.Constants)}
+		{string.Join ($"{Environment.NewLine}\t\t", parser.Constants ["Const"])}
 	}}
-
 }}
-");
+", string.Join ($"{Environment.NewLine}", new List<string> (parser.Constants.Keys).FindAll (key => key != "Text" && key != "Const").ConvertAll (key => 
+$@"public partial class @{key} {{
+	{string.Join ($"{Environment.NewLine}\t", parser.Constants [key])}
+}}
+"))
+));
 			return true;
 		} catch (Exception e) {
 			GetSharedData.ErrorMessage = $"GetSharedDataGenarator: {e}";

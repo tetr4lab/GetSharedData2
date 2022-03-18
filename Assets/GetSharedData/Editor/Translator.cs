@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -24,7 +25,7 @@ namespace GetSharedDataTranslator {
 			using (var dummy = new Log (document, token, progress)) {
 				client.Timeout = TimeSpan.FromMilliseconds (WebTimeout);
 				Log.Progress ($"started at {DateTime.Now}");
-				var book = await getSpreadsheets (client, application, document, "Text", "Const");
+				var book = await getSpreadsheets (client, application, document);
 				Log.Progress ("spreadsheet data recieved");
 				var parser = new Parser (book);
 				parser.Parse ();
@@ -41,14 +42,22 @@ namespace GetSharedDataTranslator {
 			try {
 				var sheets = new Book { };
 				await getCatalog ();
-				for (var i = 0; i < names.Length; i++) {
-					var index = sheetNames.IndexOf (names [i]);
-					if (index < 0) {
-						Log.Debug ($"not found sheet '{names [i]}'");
-					} else {
-						sheets.Add (names [i], await getSheet (index));
+				if (names.Length > 0) {
+					for (var i = 0; i < names.Length; i++) {
+						var index = sheetNames.IndexOf (names [i]);
+						if (index < 0) {
+							Log.Debug ($"not found sheet '{names [i]}'");
+						} else {
+							sheets.Add (names [i], await getSheet (index));
+						}
 					}
-				}
+				} else {
+					for (var i = 0; i < sheetNames.Length; i++) {
+						if (new Regex (@"^[\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}][\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}\p{Mn}\p{Mc}\p{Nd}\p{Pc}\p{Cf}]*$").IsMatch (sheetNames [i])) {
+							sheets.Add (sheetNames [i], await getSheet (i));
+						}
+                    }
+                }
 				await Task.Delay (WebInterval);
 				return sheets;
 			} catch (Exception exception) {
@@ -87,6 +96,8 @@ namespace GetSharedDataTranslator {
 						var sheetMatrix = new SpreadSheet (sheetIDs [index], sheetNames [index], Sheet<string>.FromJson (json));
 						Log.Debug ($" loaded [{sheetMatrix.GetLength (0)}, {sheetMatrix.GetLength (1)}]");
 						return sheetMatrix;
+					} catch (KeyNotFoundException) {
+						throw; // Abort
 					} catch (Exception exception) {
 						Log.Debug ($"JSON ERROR {retry}: {lastException = exception}");
 					}

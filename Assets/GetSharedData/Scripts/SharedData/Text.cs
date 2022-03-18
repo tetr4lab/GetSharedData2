@@ -13,10 +13,10 @@ namespace SharedConstant {
 
 	/// <summary>テキスト</summary>
 	public static partial class Nam {
-		public const int None = 0; // なし
-		public const int Language = 1; // 外部言語名
-		public const int Welcome = 2; // 記入例
-		public const int Welcome_ = 3; // 
+		public const int @None = 0; // なし
+		public const int @Language = 1; // 外部言語名
+		public const int @Welcome = 2; // 記入例
+		public const int @Welcome_ = 3; // 
 	}
 
 }
