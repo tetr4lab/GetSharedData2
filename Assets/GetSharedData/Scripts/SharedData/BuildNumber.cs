@@ -3,11 +3,11 @@ namespace SharedConstant {
 	public static partial class Cns {
 		/// <summary>ビルド番号</summary>
 #if UNITY_STANDALONE
-		public const string BuildNumber = "2";
+		public const string BuildNumber = "1";
 #elif UNITY_IOS
-		public const string BuildNumber = "2";
+		public const string BuildNumber = "1";
 #elif UNITY_ANDROID
-		public const string BuildNumber = "2";
+		public const string BuildNumber = "1";
 #else
 		public const string BuildNumber = "1.0.0.0";
 #endif

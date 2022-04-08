@@ -11,7 +11,6 @@ using Tetr4lab;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 
-[InitializeOnLoad]
 public sealed class GetSharedData : EditorWindow, IPreprocessBuildWithReport {
 
 	/// <summary>ビルド前に最優先で実行</summary>
@@ -19,16 +18,31 @@ public sealed class GetSharedData : EditorWindow, IPreprocessBuildWithReport {
 
 	#region Static
 
+	/// <summary>GASアプリケーションURL</summary>
 	private static string Application;
+	/// <summary>GCPクライアントID</summary>
 	private static string ClientId;
+	/// <summary>GCPクライアントシークレット</summary>
 	private static string ClientSecret;
+	/// <summary>アクセストークン</summary>
 	private static string AccessToken;
+	/// <summary>リフレッシュトークン</summary>
 	private static string RefreshToken;
+	/// <summary>スプレッドシートのドキュメントID</summary>
 	private static string Document;
+	/// <summary>共有データを格納するフォルダ</summary>
 	private static string AssetPath;
+
+	/// <summary>プラットフォーム間でビルド番号を共有する</summary>
 	public static bool UnifiedNumber { get; private set; }
+	
+	/// <summary>ビルド毎に番号を更新する</summary>
 	public static bool AutoIncrement { get; private set; }
+
+	// OAuth2スコープ
 	private const string Scope = "https://www.googleapis.com/auth/drive%20https://www.googleapis.com/auth/spreadsheets";
+
+	// EditorPreffkeys
 	private const string ApplicationPrefKey = "GetSharedData/Application";
 	private const string ClientIdPrefKey = "GetSharedData/ClientId";
 	private const string ClientSecretPrefKey = "GetSharedData/ClientSecret";
@@ -38,12 +52,14 @@ public sealed class GetSharedData : EditorWindow, IPreprocessBuildWithReport {
 	private const string BuildNumberSettingsIsOpenPrefKey = "GetSharedData/BuildNumberSettingsIsOpen";
 	private static string DocumentPrefKey => $"{PlayerSettings.companyName}/{PlayerSettings.productName}/Document";
 	private static string ScriptPathPrefKey => $"{PlayerSettings.companyName}/{PlayerSettings.productName}/ScriptPath";
-	private const string WindowIconPath = "Assets/GetSharedData/Textures/SpreadsheetFavicon3.png";
-	private const string TimeoutPrefKey = "GetSharedData/Timeout";
-	private const string WebIntervalPrefKey = "GetSharedData/WebInterval";
-	private const string DefaultAssetPath = "Assets/GetSharedData/Scripts/SharedData/";
 	private static string UnifiedBuildNumberPrefsKey => $"{PlayerSettings.companyName}/{PlayerSettings.productName}/UnifiedBuildNumber";
 	private static string AutoIncrementBuildNumberPrefsKey => $"{PlayerSettings.companyName}/{PlayerSettings.productName}/AutoIncrementBuildNumber";
+
+	/// <summary>アイコン画像のパス</summary>
+	private const string WindowIconPath = "Assets/GetSharedData/Textures/SpreadsheetFavicon3.png";
+
+	/// <summary>デフォルトの格納フォルダ</summary>
+	private const string DefaultAssetPath = "Assets/GetSharedData/Scripts/SharedData/";
 
 	/// <summary>ロード済み</summary>
 	private static bool isLoaded = false;
@@ -210,14 +226,16 @@ public sealed class GetSharedData : EditorWindow, IPreprocessBuildWithReport {
 
 	#region EventHandler
 
-	private void OnDestroy () {
-		SingletonObject = null;
-	}
+	/// <summary>破棄</summary>
+	private void OnDestroy () => SingletonObject = null;
 
+	/// <summary>有効化</summary>
 	private void OnEnable () => LoadPrefs ();
 	
+	/// <summary>無効化</summary>
 	private void OnDisable () => SavePrefs ();
 
+	/// <summary>表示</summary>
 	private void OnGUI () {
 		EditorGUILayout.LabelField ("Project Settings", EditorStyles.boldLabel);
 		EditorGUILayout.BeginHorizontal ();
@@ -296,9 +314,7 @@ public sealed class GetSharedData : EditorWindow, IPreprocessBuildWithReport {
 	}
 
 	/// <summary>ビルド前に実行</summary>
-    public void OnPreprocessBuild (BuildReport report) {
-		SavePrefs ();
-    }
+	public void OnPreprocessBuild (BuildReport report) => SavePrefs ();
 
     #endregion
 

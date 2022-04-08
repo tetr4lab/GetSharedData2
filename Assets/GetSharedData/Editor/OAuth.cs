@@ -16,6 +16,7 @@ using Tetr4lab;
 
 namespace OAuthHandler {
 
+	/// <summary>Google OAuth2</summary>
 	public class GoogleOAuth {
 		// ref: https://github.com/googlesamples/oauth-apps-for-windows/blob/master/OAuthConsoleApp/OAuthConsoleApp/Program.cs
 

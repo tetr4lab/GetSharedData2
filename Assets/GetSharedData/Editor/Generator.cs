@@ -8,7 +8,7 @@ using GetSharedDataTranslator;
 using ScriptableClass;
 using SharedConstant;
 
-/// <summary>アセット生成</summary>
+/// <summary>生成器</summary>
 public static class Generator {
 
 	/// <summary>生成</summary>

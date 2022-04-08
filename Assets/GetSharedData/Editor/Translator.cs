@@ -15,9 +15,12 @@ namespace GetSharedDataTranslator {
 	/// <summary>変換器</summary>
 	public static class Translator {
 
-		private const int WebTimeout = 10000; // タイムアウト
-		private const int WebInterval = 200; // インターバル
-		private const int RetryCount = 3; // リトライ回数
+		/// <summary>タイムアウト</summary>
+		private const int WebTimeout = 10000;
+		/// <summary>インターバル</summary>
+		private const int WebInterval = 200;
+		/// <summary>リトライ回数</summary>
+		private const int RetryCount = 3;
 
 		/// <summary>トランスレーター</summary>
 		public static async Task<Parser> Translate (CancellationToken token, Progress<object> progress, GoogleOAuth oauth, string application, string document, string dstPath) {
