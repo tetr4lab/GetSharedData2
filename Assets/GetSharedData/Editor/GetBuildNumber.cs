@@ -11,7 +11,7 @@ using SharedConstant;
 public class GetBuildNumber : IPreprocessBuildWithReport, IPostprocessBuildWithReport {
 
 	/// <summary>次点の優先順位</summary>
-	public int callbackOrder { get { return 1; } }
+	public int callbackOrder => 1;
 
 	/// <summary>ビルド前にコールバックされる</summary>
 	public void OnPreprocessBuild (BuildReport report) {
