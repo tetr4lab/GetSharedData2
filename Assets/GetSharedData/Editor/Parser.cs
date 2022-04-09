@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using SystemLanguage = UnityEngine.SystemLanguage;
 
-namespace GetSharedDataTranslator {
+namespace GetSharedData {
 
 	/// <summary>解析器</summary>
 	public sealed class Parser {

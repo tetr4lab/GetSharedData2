@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using SharedConstant;
 
+/// <summary>サンプルメイン</summary>
 public class SwitchPanel : MonoBehaviour {
 
 	[SerializeField] private Text TextPanel = default;

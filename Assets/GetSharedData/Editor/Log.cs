@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
-namespace GetSharedDataTranslator {
+namespace GetSharedData {
 
 	/// <summary>ログ</summary>
 	public sealed class Log : IDisposable {
@@ -38,7 +38,7 @@ namespace GetSharedDataTranslator {
 			if (!force && isAbortProgress) { return; }
 			Task.Delay (100);
 			Document = null;
-			GetSharedData.ErrorMessage = message;
+			MainController.ErrorMessage = message;
 			Task.Delay (100);
 			throw exception ?? new Exception ();
 		}

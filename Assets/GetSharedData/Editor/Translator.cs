@@ -10,7 +10,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using OAuthHandler;
 
-namespace GetSharedDataTranslator {
+namespace GetSharedData {
 
 	/// <summary>変換器</summary>
 	public static class Translator {

@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
-namespace GetSharedDataTranslator {
+namespace GetSharedData {
 
 	/// <summary>シリアライズ可能な2次元配列(として振る舞うジャグ配列)</summary>
 	[DataContract]

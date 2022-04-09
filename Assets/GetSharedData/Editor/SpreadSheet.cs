@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace GetSharedDataTranslator {
+namespace GetSharedData {
 
 	/// <summary>ブック</summary>
 	public sealed class Book : Dictionary<string, SpreadSheet> {
