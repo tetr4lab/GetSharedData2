@@ -1,5 +1,5 @@
 ---
-title: Googleスプレッドシートを使ったUnityコラボ開発 (OAuth 2.0対応版)
+title: Googleスプレッドシートを使ったUnityコラボ開発 (多言語テキストと定数表)
 tags: Unity C# ScriptableObject gas OAuth
 ---
 
