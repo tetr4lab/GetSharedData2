@@ -37,7 +37,7 @@ namespace GetSharedData {
 			Languages = new List<SystemLanguage> { };
 			if (rows [0] [0] == "Key") {
 				for (var r = 1; r < rows.Count; r++) {
-					TextKeys.Add ($"public const int @{rows [r] [0]} = {r - 1}; // {rows [r] [1]}");
+					TextKeys.Add ($"public const int @{rows [r] [0]} = {r - 1};{(string.IsNullOrEmpty (rows [r] [1]) ? "" : $" // {rows [r] [1]}")}");
 				}
 			}
 			for (var c = 2; c < rows [0].Count; c++) {
@@ -79,7 +79,7 @@ namespace GetSharedData {
 							head = "//";
 							break;
 					}
-					Constants [sheetName].Add ($"{head}public const {type} @{name} = {value}; // {comment}");
+					Constants [sheetName].Add ($"{head}public const {type} @{name} = {value};{(string.IsNullOrEmpty (comment) ? "" : $" // {comment}")}");
 					void error () { comment += "  /// ERROR ///"; head = "//"; }
 				}
 			}
