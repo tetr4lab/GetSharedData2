@@ -1,13 +1,10 @@
+---
+title: Googleスプレッドシートを使ったUnityコラボ開発 (OAuth 2.0対応版)
+tags: Unity C# ScriptableObject gas OAuth
+---
+
 # GetSharedData2
 Unity collaboration development using Google Spreadsheet (OAuth 2.0 compatible version)
-
----
-
-title: Googleスプレッドシートを使ったUnityコラボ開発 (OAuth 2.0対応版)
-
-tags: Unity C# ScriptableObject gas OAuth
-
----
 
 # はじめに
 - この記事は、[過去に公開した記事](https://qiita.com/tetr4lab/items/4d04e46ac503f19fe1e7)の焼き直しで、大まかに以下の相違があります。
