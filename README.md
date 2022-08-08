@@ -8,16 +8,16 @@ tags: Unity C# ScriptableObject gas OAuth
   - `ScriptableObject`と`Addressables`に対応しました。
   - スプレッドシート側の計算式を使わずに、シート全体を取得して解析するようしました。
 - 公開当初に比して、以下の点が変更されました。
-  - unity 2020.3で確認しました。
+  - unity 2020.3, 2021.3で確認しました。
   - OAuth 2.0に対応しました。
   - Windowsに依存した可能性が高いです。
 
 ## 前提
-- unity 2020.3.33f1 (2018.4.36でも動作確認済み)
+- unity 2018.4.36, 2020.3.33, 2021.3.7
     - Addressables 1.18.19
 - Googleスプレッドシート
 - Googleアカウント
-- Windows 10
+- Windows 10, 11
   - 他のOSではテストされておらず、動作は不明です。
 <details><summary>このシステムのセキュリティについて</summary><div>
 
