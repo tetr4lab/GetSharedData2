@@ -150,7 +150,7 @@ namespace OAuthHandler {
 						var foregroundWindow = GetForegroundWindow ();
 #endif
 						// OAuth認証要求のためにブラウザーを開く
-						string authorizationRequest = $"{AuthorizationUri}?client_id={ClientId}&redirect_uri={Uri.EscapeDataString (redirectUri)}&scope={Scope}&response_type=code&approval_prompt=force&access_type=offline&state={state}&code_challenge={codeChallenge}&code_challenge_method={codeChallengeMethod}";
+						string authorizationRequest = $"{AuthorizationUri}?client_id={ClientId}&redirect_uri={Uri.EscapeDataString (redirectUri)}&scope={Uri.EscapeDataString (Scope)}&response_type=code&approval_prompt=force&access_type=offline&state={state}&code_challenge={codeChallenge}&code_challenge_method={codeChallengeMethod}";
 						Process.Start (authorizationRequest);
 						// 中断可能な形で承認を待つ
 						http.BeginGetContext (new AsyncCallback (result => {

@@ -61,7 +61,7 @@ namespace GetSharedData {
 		private static string AutoIncrementBuildNumberPrefsKey => $"{PlayerSettings.companyName}/{PlayerSettings.productName}/AutoIncrementBuildNumber";
 
 		// OAuth2スコープ
-		private const string Scope = "https://www.googleapis.com/auth/drive%20https://www.googleapis.com/auth/spreadsheets";
+		private const string Scope = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly";
 
 		/// <summary>デフォルトの格納フォルダ</summary>
 		private const string DefaultAssetPath = "Assets/GetSharedData/Scripts/SharedData/";
@@ -70,19 +70,19 @@ namespace GetSharedData {
 		private static bool isLoaded = false;
 
 		/// <summary>認証情報</summary>
-		private static GoogleOAuth OAuth = null;
+		private static GoogleOAuth oAuth = null;
 
 		/// <summary>中断トークン</summary>
-		private static CancellationTokenSource TokenSource;
+		private static CancellationTokenSource tokenSource;
 
 		/// <summary>中断請求済み</summary>
-		public static bool IsCancellationRequested => TokenSource != null && TokenSource.Token.IsCancellationRequested;
+		public static bool IsCancellationRequested => tokenSource != null && tokenSource.Token.IsCancellationRequested;
 
 		/// <summary>変換タスク</summary>
-		private static Task Translator = null;
+		private static Task translator = null;
 
 		/// <summary>変換中</summary>
-		public static bool IsTranslating => Translator != null;
+		public static bool IsTranslating => translator != null;
 
 		/// <summary>結果 (空なら正常終了)</summary>
 		public static string ErrorMessage;
@@ -93,7 +93,7 @@ namespace GetSharedData {
 		/// <summary>取得と変換</summary>
 		[MenuItem ("Window/GetSharedData/Get SpreadSheet %&g")]
 		public static void GetData () {
-			if (Translator != null) {
+			if (translator != null) {
 				Debug.LogWarning ("GetSharedData: already running");
 				return;
 			}
@@ -126,12 +126,12 @@ namespace GetSharedData {
 		/// <summary>中断</summary>
 		[MenuItem ("Window/GetSharedData/Abort")]
 		public static void Abort () {
-			if (Translator == null) {
+			if (translator == null) {
 				Debug.LogWarning ("GetSharedData: not running");
-			} else if (TokenSource.Token.IsCancellationRequested) {
+			} else if (tokenSource.Token.IsCancellationRequested) {
 				Debug.LogWarning ("GetSharedData: already requested");
 			} else {
-				TokenSource.Cancel ();
+				tokenSource.Cancel ();
 				Debug.LogWarning ("GetSharedData: cancel-request by user");
 			}
 		}
@@ -141,22 +141,22 @@ namespace GetSharedData {
 			try {
 				await InitOAuth ();
 				ErrorMessage = null;
-				TokenSource = new CancellationTokenSource ();
-				var token = TokenSource.Token; // 中断トークン
+				tokenSource = new CancellationTokenSource ();
+				var token = tokenSource.Token; // 中断トークン
 				var progress = new Progress<object> (str => Debug.Log ($"GetSharedData: {str}")); // 進捗報告ハンドラ
-				Translator = Task.Run (async () => { parser = await GetSharedData.Translator.Translate (token, progress, OAuth, Application, Document, AssetPath); }, token);
-				await Translator;
+				translator = Task.Run (async () => { parser = await Translator.Translate (token, progress, oAuth, Application, Document, AssetPath); }, token);
+				await translator;
 			}
 			finally {
-				if (string.IsNullOrEmpty (ErrorMessage) && (Translator == null || Translator.Status == TaskStatus.RanToCompletion) && parser != null && parser.Generate (AssetPath)) {
+				if (string.IsNullOrEmpty (ErrorMessage) && (translator == null || translator.Status == TaskStatus.RanToCompletion) && parser != null && parser.Generate (AssetPath)) {
 					Debug.Log ("GetSharedData:└─── END");
 				} else {
-					Debug.LogError (string.IsNullOrEmpty (ErrorMessage) ? $"GetSharedData: Task {Translator.Status}" : ErrorMessage);
+					Debug.LogError (string.IsNullOrEmpty (ErrorMessage) ? $"GetSharedData: Task {translator.Status}" : ErrorMessage);
 					Debug.Log ("GetSharedData:└─── ABORT");
 				}
-				TokenSource.Dispose ();
-				Translator.Dispose ();
-				Translator = null;
+				tokenSource.Dispose ();
+				translator.Dispose ();
+				translator = null;
 				await InitOAuth ();
 				AssetDatabase.Refresh (); // アセットを更新
 				Window.Update ();
@@ -165,20 +165,20 @@ namespace GetSharedData {
 
 		/// <summary>OAuth初期化</summary>
 		private static async Task InitOAuth () {
-			if (OAuth == null) {
+			if (oAuth == null) {
 				if (!string.IsNullOrEmpty (ClientId) && !string.IsNullOrEmpty (ClientSecret)) {
-					OAuth = new GoogleOAuth (ClientId, ClientSecret, Scope, AccessToken, RefreshToken, applicationUrl: Application);
-					(AccessToken, RefreshToken) = await OAuth.GetTokensAsync (silent: true);
+					oAuth = new GoogleOAuth (ClientId, ClientSecret, Scope, AccessToken, RefreshToken, applicationUrl: Application);
+					(AccessToken, RefreshToken) = await oAuth.GetTokensAsync (silent: true);
 				}
 			} else {
-				(AccessToken, RefreshToken) = OAuth.Tokens;
+				(AccessToken, RefreshToken) = oAuth.Tokens;
 			}
 		}
 
 		/// <summary>OAuthトークン消去</summary>
 		public static void ClearOAuth () {
 			AccessToken = RefreshToken = "";
-			OAuth.ClearTokens ();
+			oAuth.ClearTokens ();
 		}
 
 		/// <summary>設定のロード</summary>
@@ -204,8 +204,8 @@ namespace GetSharedData {
 			// ロードされたことがない(初期化されていない)可能性に配慮
 			LoadPrefs ();
 
-			if (OAuth != null) {
-				(AccessToken, RefreshToken) = OAuth.Tokens;
+			if (oAuth != null) {
+				(AccessToken, RefreshToken) = oAuth.Tokens;
 			}
 			EditorPrefs.SetString (ApplicationPrefKey, Application);
 			EditorPrefs.SetString (ClientIdPrefKey, ClientId);

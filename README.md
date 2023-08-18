@@ -13,8 +13,8 @@ tags: Unity C# ScriptableObject gas OAuth
   - Windowsに依存した可能性が高いです。
 
 ## 前提
-- unity 2018.4.36, 2020.3.33, 2021.3.7
-    - Addressables 1.18.19
+- unity 2018.4.36, 2020.3.33, 2021.3.29
+    - Addressables 1.19.19
 - Googleスプレッドシート
 - Googleアカウント
 - Windows 10, 11
@@ -169,3 +169,10 @@ tags: Unity C# ScriptableObject gas OAuth
 - メンバーで共有する[アセットの設定](#%E3%82%A2%E3%82%BB%E3%83%83%E3%83%88%E3%81%AE%E5%B0%8E%E5%85%A5%E3%81%A8%E8%A8%AD%E5%AE%9A)は、「Project Settings」と「Build/Bundle Number Settings」だけです。
 - 「OAuth Settings」は共有してはいけません。つまり、各メンバーそれぞれが[Google Apps Script の作成](#google-apps-script-%E3%81%AE%E4%BD%9C%E6%88%90)を行う必要があります。
 - なお、これらの設定は、プロジェクトのフォルダには保存されないので、GitHubなどによるアセットの共有で問題が生じることはありません。
+
+# トラブルシューティング
+
+## 期間を開けて使用したら認証でエラーする
+
+- Google Apps Script のデプロイをやり直してみてください。
+- デプロイによって、Application URLが更新されるので、インスペクタで新しいURLを設定する必要があります。
