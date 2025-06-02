@@ -13,11 +13,11 @@ tags: Unity C# ScriptableObject gas OAuth
   - Windowsに依存した可能性が高いです。
 
 ## 前提
-- unity 2018.4.36, 2020.3.33, 2021.3.29
-    - Addressables 1.19.19
+- unity 6000.0.50f1
+    - Addressables 2.5.0
 - Googleスプレッドシート
 - Googleアカウント
-- Windows 10, 11
+- Windows 11
   - 他のOSではテストされておらず、動作は不明です。
 <details><summary>このシステムのセキュリティについて</summary><div>
 
@@ -171,6 +171,13 @@ tags: Unity C# ScriptableObject gas OAuth
 - なお、これらの設定は、プロジェクトのフォルダには保存されないので、GitHubなどによるアセットの共有で問題が生じることはありません。
 
 # トラブルシューティング
+
+## 「その操作を実行するには承認が必要です。」
+
+- スクリプトに対する承認が失効しています。
+- スクリプトエディタを開いて任意の関数を実行することで承認画面を表示できます。
+
+https://developers.google.com/apps-script/guides/support/troubleshooting?hl=ja#authorization-is
 
 ## 期間を開けて使用したら認証でエラーする
 
